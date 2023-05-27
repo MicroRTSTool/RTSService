@@ -17,8 +17,8 @@ public class MappingsProvider {
     //    test1
     //    test2
 
-    public static Set<String> getAffectedServices(String repoName, String branchName, int prNumber) throws IOException {
-        return GitHubPRAnalyzer.affectedServices(repoName, branchName, prNumber);
+    public static Set<String> getAffectedServices(String repoName, int prNumber) throws IOException {
+        return GitHubPRAnalyzer.affectedServices(repoName, prNumber);
     }
     public static Map<String, Set<String>> getTestToSvcMapping(String repoName, String branchName) throws IOException {
         return GitHubRepoAnalyzer.getTestToServicesMap(repoName, branchName);

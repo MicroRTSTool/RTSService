@@ -1,5 +1,10 @@
 package org.rts.micro;
 
+import org.kohsuke.github.GHCommit;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,16 +15,44 @@ import java.util.Map;
 import java.util.Set;
 
 public class RTSelector {
-    public static void main(String[] args) throws Exception {
-        String repoName = "Dilhasha/ecommerce-sample";
-        int prNumber = 1;
-        String monitoringURL = "http://localhost:16686";
+//    public static void main(String[] args) throws Exception {
+//        String repoName = "Dilhasha/ecommerce-sample";
+//        configureRepo(repoName);
+//        int prNumber = 1;
+//        String monitoringURL = "http://localhost:16686";
+//
+//        // Get the service dependencies
+//        Map<String, Set<String>> serviceDependenciesMap = MappingsProvider.getSvcDependencies(monitoringURL);
+//        // Get the affected services
+//        String branchName = "simple-microservices";
+//        Set<String> affectedServices = MappingsProvider.getAffectedServices(repoName, prNumber);
+//        // Given service dependencies and affected services, get the extended graph of affected services
+//        Set<String> allAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, affectedServices);
+//        // Get the test to service mapping
+//        Map<String, Set<String>> testToServicesMap = MappingsProvider.getTestToSvcMapping(repoName, branchName);
+//        // Get the matching tests
+//        Set<String> matchingTests = getMatchingTests(allAffectedServices, testToServicesMap);
+//        System.out.println("Matching tests for repo " + repoName + ": " + matchingTests);
+//    }
 
+    public static void configureRepo(String repoName, String branchName) throws Exception {
+        // Get the affected services
+        GitHub github = new GitHubBuilder().build();
+        GHRepository repo = github.getRepository(repoName);
+        GHCommit commit = repo.getCommit(repo.getBranch(branchName).getSHA1());
+        String commitHash = commit.getSHA1();
+        // Get the test to service mapping
+        String testToServicesJson = GitHubRepoAnalyzer.getTestToServices(repo, branchName);
+        String svcPathMappingsJson = GitHubRepoAnalyzer.getServicePathMappings(repo, branchName);
+        DatabaseAccessor.insertIntoDb(repoName, branchName, commitHash, testToServicesJson, svcPathMappingsJson);
+    }
+
+    public static Set<String> selectTests(String repoName, int prNumber, String monitoringURL) throws Exception {
         // Get the service dependencies
         Map<String, Set<String>> serviceDependenciesMap = MappingsProvider.getSvcDependencies(monitoringURL);
         // Get the affected services
         String branchName = "simple-microservices";
-        Set<String> affectedServices = MappingsProvider.getAffectedServices(repoName, branchName, prNumber);
+        Set<String> affectedServices = MappingsProvider.getAffectedServices(repoName, prNumber);
         // Given service dependencies and affected services, get the extended graph of affected services
         Set<String> allAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, affectedServices);
         // Get the test to service mapping
@@ -27,7 +60,7 @@ public class RTSelector {
         // Get the matching tests
         Set<String> matchingTests = getMatchingTests(allAffectedServices, testToServicesMap);
         System.out.println("Matching tests for repo " + repoName + ": " + matchingTests);
-
+        return matchingTests;
     }
 
 

@@ -29,4 +29,16 @@ public class GitHubRepoAnalyzer {
 
         return testToServicesMap;
     }
+
+    public static String getTestToServices(GHRepository repo, String branchName) throws IOException {
+        // assuming test_svc_mappings.json is in the root of the repo
+        GHContent content = repo.getFileContent("test_svc_mappings.json", branchName);
+        return new String(content.read().readAllBytes());
+    }
+
+    public static String getServicePathMappings(GHRepository repo, String branchName) throws IOException {
+        // assuming svc_path_mappings.json is in the root of the repo
+        GHContent content = repo.getFileContent("svc_path_mappings.json", branchName);
+        return new String(content.read().readAllBytes());
+    }
 }

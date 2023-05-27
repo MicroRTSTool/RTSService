@@ -13,11 +13,12 @@ public class GitHubPRAnalyzer {
     //private static final String REPO_NAME = "owner/repo"; // change to your repo name
     //private static final int PR_NUMBER = 1; // change to your PR number
 
-    public static Set<String> affectedServices(String repoName, String branchName, int prNumber) throws IOException {
+    public static Set<String> affectedServices(String repoName, int prNumber) throws IOException {
         GitHub github = new GitHubBuilder().build();
         GHRepository repo = github.getRepository(repoName);
         GHPullRequest pr = repo.getPullRequest(prNumber);
-        System.out.println("Base branch is " + pr.getBase().getRef());
+        String branchName = pr.getHead().getRef();
+        System.out.println("Base branch is " + branchName);
 
         Map<String, String> svcPathMappings = getServicePathMappings(repo, branchName);
 
