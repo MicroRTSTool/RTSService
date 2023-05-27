@@ -20,9 +20,6 @@ public class MappingsProvider {
     public static Set<String> getAffectedServices(String repoName, int prNumber) throws IOException {
         return GitHubPRAnalyzer.affectedServices(repoName, prNumber);
     }
-    public static Map<String, Set<String>> getTestToSvcMapping(String repoName, String branchName) throws IOException {
-        return GitHubRepoAnalyzer.getTestToServicesMap(repoName, branchName);
-    }
 
     public static Map<String, Set<String>> getSvcDependencies(String monitoringServiceUrl) throws Exception {
         return ServiceDependencyMapper.getSvcDependencies(monitoringServiceUrl);

@@ -1,9 +1,12 @@
 package org.rts.micro;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
+import org.rts.micro.models.GitHubRepo;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +38,7 @@ public class RTSelector {
 //        System.out.println("Matching tests for repo " + repoName + ": " + matchingTests);
 //    }
 
-    public static void configureRepo(String repoName, String branchName) throws Exception {
+    public static void configureRepo(String repoName, String branchName, String monitoringURL) throws Exception {
         // Get the affected services
         GitHub github = new GitHubBuilder().build();
         GHRepository repo = github.getRepository(repoName);
@@ -44,23 +47,30 @@ public class RTSelector {
         // Get the test to service mapping
         String testToServicesJson = GitHubRepoAnalyzer.getTestToServices(repo, branchName);
         String svcPathMappingsJson = GitHubRepoAnalyzer.getServicePathMappings(repo, branchName);
-        DatabaseAccessor.insertIntoDb(repoName, branchName, commitHash, testToServicesJson, svcPathMappingsJson);
+        DatabaseAccessor.insertIntoDb(repoName, branchName, commitHash, testToServicesJson, svcPathMappingsJson, monitoringURL);
     }
 
-    public static Set<String> selectTests(String repoName, int prNumber, String monitoringURL) throws Exception {
+    public static String selectTests(String repoName, String branchName, int prNumber) throws Exception {
+        String latestCommit = GitHubRepoAnalyzer.getLatestCommit(repoName, branchName);
+        GitHubRepo gitHubRepo = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
+        if (gitHubRepo == null) {
+            throw new Exception("No data found for the given repo, branch and commit hash. Please configure the repo first.");
+        }
         // Get the service dependencies
-        Map<String, Set<String>> serviceDependenciesMap = MappingsProvider.getSvcDependencies(monitoringURL);
+        Map<String, Set<String>> serviceDependenciesMap =
+                MappingsProvider.getSvcDependencies(gitHubRepo.getMonitoringUrl());
         // Get the affected services
-        String branchName = "simple-microservices";
-        Set<String> affectedServices = MappingsProvider.getAffectedServices(repoName, prNumber);
+        Set<String> affectedServices = MappingsProvider.getAffectedServices(gitHubRepo.getRepo(), prNumber);
         // Given service dependencies and affected services, get the extended graph of affected services
         Set<String> allAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, affectedServices);
-        // Get the test to service mapping
-        Map<String, Set<String>> testToServicesMap = MappingsProvider.getTestToSvcMapping(repoName, branchName);
         // Get the matching tests
-        Set<String> matchingTests = getMatchingTests(allAffectedServices, testToServicesMap);
-        System.out.println("Matching tests for repo " + repoName + ": " + matchingTests);
+        String matchingTests = matchingTestsArray(getMatchingTests(allAffectedServices, gitHubRepo.getTestToSvcMapping()));
         return matchingTests;
+    }
+
+    private static String matchingTestsArray(Set<String> matchingTests) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(matchingTests);
     }
 
 
