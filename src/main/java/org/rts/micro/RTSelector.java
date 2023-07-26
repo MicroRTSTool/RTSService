@@ -6,37 +6,14 @@ import org.kohsuke.github.GHCommit;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
-import org.rts.micro.models.GitHubRepo;
+import org.rts.micro.models.MicroserviceProject;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class RTSelector {
-//    public static void main(String[] args) throws Exception {
-//        String repoName = "Dilhasha/ecommerce-sample";
-//        configureRepo(repoName);
-//        int prNumber = 1;
-//        String monitoringURL = "http://localhost:16686";
-//
-//        // Get the service dependencies
-//        Map<String, Set<String>> serviceDependenciesMap = MappingsProvider.getSvcDependencies(monitoringURL);
-//        // Get the affected services
-//        String branchName = "simple-microservices";
-//        Set<String> affectedServices = MappingsProvider.getAffectedServices(repoName, prNumber);
-//        // Given service dependencies and affected services, get the extended graph of affected services
-//        Set<String> allAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, affectedServices);
-//        // Get the test to service mapping
-//        Map<String, Set<String>> testToServicesMap = MappingsProvider.getTestToSvcMapping(repoName, branchName);
-//        // Get the matching tests
-//        Set<String> matchingTests = getMatchingTests(allAffectedServices, testToServicesMap);
-//        System.out.println("Matching tests for repo " + repoName + ": " + matchingTests);
-//    }
 
     public static void configureRepo(String repoName, String branchName, String monitoringURL) throws Exception {
         // Get the affected services
@@ -44,28 +21,49 @@ public class RTSelector {
         GHRepository repo = github.getRepository(repoName);
         GHCommit commit = repo.getCommit(repo.getBranch(branchName).getSHA1());
         String commitHash = commit.getSHA1();
-        // Get the test to service mapping
-        String testToServicesJson = GitHubRepoAnalyzer.getTestToServices(repo, branchName);
-        String svcPathMappingsJson = GitHubRepoAnalyzer.getServicePathMappings(repo, branchName);
-        DatabaseAccessor.insertIntoDb(repoName, branchName, commitHash, testToServicesJson, svcPathMappingsJson, monitoringURL);
+        GitHubRepoAnalyzer.analyzeRepo(repo, branchName, commitHash, monitoringURL);
     }
 
-    public static String selectTests(String repoName, String branchName, int prNumber) throws Exception {
+    public static String selectTests(String repoName, String branchName, int prNumber, String monitoringUrl) throws Exception {
+        System.out.println("hit the select tests");
         String latestCommit = GitHubRepoAnalyzer.getLatestCommit(repoName, branchName);
-        GitHubRepo gitHubRepo = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
-        if (gitHubRepo == null) {
+        System.out.println("latest commit: " + latestCommit);
+        List<MicroserviceProject> projects = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
+        if (projects.isEmpty()) {
             throw new Exception("No data found for the given repo, branch and commit hash. Please configure the repo first.");
         }
+        List<String> changedFiles = GitHubPRAnalyzer.getChangedFiles(repoName, prNumber);
         // Get the service dependencies
         Map<String, Set<String>> serviceDependenciesMap =
-                MappingsProvider.getSvcDependencies(gitHubRepo.getMonitoringUrl());
-        // Get the affected services
-        Set<String> affectedServices = MappingsProvider.getAffectedServices(gitHubRepo.getRepo(), prNumber);
-        // Given service dependencies and affected services, get the extended graph of affected services
-        Set<String> allAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, affectedServices);
+                MappingsProvider.getSvcDependencies(monitoringUrl);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        Set<String> allAffectedServices = new HashSet<>();
+        for (MicroserviceProject microserviceProject : projects) {
+            System.out.println("Analyzing project: " + microserviceProject.getProjectPath());
+            // Get the affected services
+            Set<String> affectedServices = MappingsProvider.getAffectedServices(microserviceProject, changedFiles);
+            // Given service dependencies and affected services, get the extended graph of affected services
+            if (affectedServices != null || !affectedServices.isEmpty()) {
+                    allAffectedServices.addAll(affectedServices);
+            }
+        }
+        Set<String> extendedAffectedServices = getExtendedAffectedServices(serviceDependenciesMap, allAffectedServices);
         // Get the matching tests
-        String matchingTests = matchingTestsArray(getMatchingTests(allAffectedServices, gitHubRepo.getTestToSvcMapping()));
-        return matchingTests;
+        for (MicroserviceProject microserviceProject : projects) {
+            Map<String, Set<String>> testToSvcMappings = microserviceProject.getTestToSvcMapping();
+
+            if (testToSvcMappings != null && !testToSvcMappings.isEmpty() &&
+                    extendedAffectedServices != null && !extendedAffectedServices.isEmpty()) {
+                Set<String> matchingTests = getMatchingTests(extendedAffectedServices, testToSvcMappings);
+                if (matchingTests != null && !matchingTests.isEmpty()) {
+                    stringBuilder.append(GitHubPRAnalyzer.extractRelativePath(microserviceProject.getProjectPath()) +
+                            " : " + matchingTestsArray(matchingTests));
+                    stringBuilder.append("\n");
+                }
+            }
+        }
+        return stringBuilder.toString();
     }
 
     private static String matchingTestsArray(Set<String> matchingTests) throws JsonProcessingException {
@@ -96,20 +94,28 @@ public class RTSelector {
     public static Set<String> getMatchingTests(Set<String> affectedServices, Map<String, Set<String>> testToServicesMap) {
         // Prepare a set to store matching tests
         Set<String> matchingTests = new HashSet<>();
-
-        // Iterate over each test and its associated services
-        for (Map.Entry<String, Set<String>> entry : testToServicesMap.entrySet()) {
-            // If there is any intersection between the services of the current test and the affected services
-            if (!Collections.disjoint(entry.getValue(), affectedServices)) {
-                // Add the test to the set of matching tests
-                matchingTests.add(entry.getKey());
+        if (testToServicesMap != null) {
+            // Iterate over each test and its associated services
+            for (Map.Entry<String, Set<String>> entry : testToServicesMap.entrySet()) {
+                // If there is any intersection between the services of the current test and the affected services
+                if (hasIntersection(entry.getValue(), affectedServices)) {
+                    // Add the test to the set of matching tests
+                    matchingTests.add(entry.getKey());
+                }
             }
         }
         return matchingTests;
     }
 
-    public static List<String> readRepoList() throws IOException {
-        return Files.readAllLines(Paths.get("repolist.txt"));
+    public static boolean hasIntersection(Set<String> set1, Set<String> set2) {
+        for (String s1 : set1) {
+            for (String s2 : set2) {
+                if (s1.endsWith(s2)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

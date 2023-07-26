@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
-
 @RestController
 public class RTSController {
 
@@ -28,9 +26,9 @@ public class RTSController {
     @CrossOrigin
     @GetMapping("/rts")
     public ResponseEntity<String> selectTests(@RequestParam int pr, @RequestParam String repoName,
-                                              @RequestParam String branchName) {
+                                              @RequestParam String branchName, @RequestParam String monitoringURL) {
         try {
-            String selectedTests = RTSelector.selectTests(repoName, branchName,pr);
+            String selectedTests = RTSelector.selectTests(repoName, branchName, pr, monitoringURL);
             return ResponseEntity.ok(selectedTests);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());

@@ -21,6 +21,7 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.26'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.6.0.202305301015-r'
 }
 
 test {

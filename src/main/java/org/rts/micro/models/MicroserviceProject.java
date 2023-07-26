@@ -3,7 +3,7 @@ package org.rts.micro.models;
 import java.util.Map;
 import java.util.Set;
 
-public class GitHubRepo {
+public class MicroserviceProject {
     private int id;
     private String repo;
     private String branch;
@@ -11,19 +11,21 @@ public class GitHubRepo {
     private Map<String, Set<String>> testToSvcMapping;
     private Map<String, String> serviceToPathMapping;
     private String monitoringUrl;
+    private String projectPath;
 
     // Constructors
-    public GitHubRepo() {}
+    public MicroserviceProject() {}
 
-    public GitHubRepo(String repo, String branch, String lastCommit,
-                      Map<String, Set<String>> testToSvcMapping, Map<String, String> serviceToPathMapping,
-                      String monitoringUrl) {
+    public MicroserviceProject(String repo, String branch, String lastCommit,
+                               Map<String, Set<String>> testToSvcMapping, Map<String, String> serviceToPathMapping,
+                               String monitoringUrl, String projectPath) {
         this.repo = repo;
         this.branch = branch;
         this.lastCommit = lastCommit;
         this.testToSvcMapping = testToSvcMapping;
         this.serviceToPathMapping = serviceToPathMapping;
         this.monitoringUrl = monitoringUrl;
+        this.projectPath = projectPath;
     }
 
     // Getters and setters for all fields
@@ -45,4 +47,13 @@ public class GitHubRepo {
 
     public String getMonitoringUrl() { return monitoringUrl; }
     public void setMonitoringUrl(String monitoringUrl) { this.monitoringUrl = monitoringUrl; }
+
+    public String getProjectPath() {
+        return projectPath;
+    }
+
+    public void setProjectPath(String projectPath) {
+        this.projectPath = projectPath;
+    }
+
 }

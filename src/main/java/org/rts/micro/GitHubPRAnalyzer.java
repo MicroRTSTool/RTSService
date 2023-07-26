@@ -1,11 +1,18 @@
 package org.rts.micro;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.kohsuke.github.*;
+import org.kohsuke.github.GHPullRequest;
+import org.kohsuke.github.GHPullRequestFileDetail;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.kohsuke.github.GitHubBuilder;
+import org.rts.micro.models.MicroserviceProject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GitHubPRAnalyzer {
 
@@ -13,22 +20,17 @@ public class GitHubPRAnalyzer {
     //private static final String REPO_NAME = "owner/repo"; // change to your repo name
     //private static final int PR_NUMBER = 1; // change to your PR number
 
-    public static Set<String> affectedServices(String repoName, int prNumber) throws IOException {
-        GitHub github = new GitHubBuilder().build();
-        GHRepository repo = github.getRepository(repoName);
-        GHPullRequest pr = repo.getPullRequest(prNumber);
-        String branchName = pr.getHead().getRef();
-        System.out.println("Base branch is " + branchName);
-
-        Map<String, String> svcPathMappings = getServicePathMappings(repo, branchName);
+    public static Set<String> affectedServices(MicroserviceProject project, List<String> changedFiles) {
+        Map<String, String> svcPathMappings = project.getServiceToPathMapping();
 
         Set<String> affectedServices = new HashSet<>();
-        for (GHPullRequestFileDetail fileDetail : pr.listFiles()) {
-            String fileName = fileDetail.getFilename();
-            for (Map.Entry<String, String> entry : svcPathMappings.entrySet()) {
-                if (fileName.startsWith(entry.getValue())) {
-                    affectedServices.add(entry.getKey());
-                    break;
+        if (svcPathMappings != null) {
+            for (String fileName : changedFiles) {
+                for (Map.Entry<String, String> entry : svcPathMappings.entrySet()) {
+                    if (fileName.startsWith(extractRelativePath(entry.getValue()))) {
+                        affectedServices.add(entry.getKey());
+                        break;
+                    }
                 }
             }
         }
@@ -36,25 +38,24 @@ public class GitHubPRAnalyzer {
         return affectedServices;
     }
 
-    private static Map<String, String> getServicePathMappings(GHRepository repo, String branchName) throws IOException {
-        // assuming svc_path_mappings.json is in the root of the repo
-        GHContent content = repo.getFileContent("svc_path_mappings.json", branchName);
-        String json = new String(content.read().readAllBytes());
-
-        // Use a JSON library like Jackson or Gson to parse the JSON string into a Map
-        // This is a placeholder and won't compile
-        Map<String, String> svcPathMappings = parseJson(json);
-
-        return svcPathMappings;
+    public static String extractRelativePath(String fullPath) {
+        String[] parts = fullPath.split("gitCloneTempDir[0-9]+/");
+        if (parts.length > 1) {
+            return parts[1];
+        }
+        return fullPath;
     }
 
-    private static Map<String, String> parseJson(String json) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.readValue(json, new TypeReference<Map<String,String>>(){});
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static List<String> getChangedFiles(String repoName, int prNumber) throws IOException {
+        GitHub github = new GitHubBuilder().build();
+        GHRepository repo = github.getRepository(repoName);
+        GHPullRequest pr = repo.getPullRequest(prNumber);
+
+        List<String> changedFiles = new ArrayList<>();
+        for (GHPullRequestFileDetail fileDetail : pr.listFiles()) {
+            String fileName = fileDetail.getFilename();
+            changedFiles.add(fileName);
         }
-        return new HashMap<>();
+        return changedFiles;
     }
 }
