@@ -14,9 +14,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class DatabaseAccessor {
-    private static String url = "jdbc:mysql://localhost:3306/repo_details";
-    private static String user = "root";
-    private static String password = "root123!";
+    private static String url =
+            System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "jdbc:mysql://localhost:3306/repo_details";
+    private static String user = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
+    private static String password = System.getenv("DB_PWD") != null ? System.getenv("DB_PWD") : "root123!";
+
 
     public static void insertIntoDb(String repo, String branch, String lastCommit, String testToSvcMapping,
                                     String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
@@ -59,6 +61,7 @@ public class DatabaseAccessor {
             throw ex;
         }
     }
+
     public static List<MicroserviceProject> fetchDataFromDb(String repoName, String branchName, String commitHash)
             throws IOException, SQLException {
 
@@ -81,9 +84,9 @@ public class DatabaseAccessor {
                     String monitoringUrl = rs.getString("monitoring_url");
 
                     Map<String, String> serviceToPathMap =
-                            serviceToPathMapping != null ? GitHubRepoAnalyzer.getServicePathMappings(serviceToPathMapping) : null;
+                            serviceToPathMapping != null ? Utils.parseJson(serviceToPathMapping) : null;
                     Map<String, Set<String>> testToSvcMap =
-                            testToSvcMapping != null ? GitHubRepoAnalyzer.getTestToServicesMap(testToSvcMapping) : null;
+                            testToSvcMapping != null ? Utils.getMapFromJson(testToSvcMapping) : null;
                     MicroserviceProject microserviceProject = new MicroserviceProject(repoName, branchName, commitHash, testToSvcMap,
                             serviceToPathMap, monitoringUrl, rs.getString("project_path"));
                     projects.add(microserviceProject);
