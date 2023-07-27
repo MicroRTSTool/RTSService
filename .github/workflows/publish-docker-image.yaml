@@ -33,5 +33,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: gcr.io/microrts-sample/microrts.api:1.0.0
+          tags: gcr.io/"$PROJECT_ID"/"$IMAGE":"$TAG"
 
