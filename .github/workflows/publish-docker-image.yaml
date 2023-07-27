@@ -6,7 +6,7 @@ on:
       - v1.0.0
 
 env:
-  PROJECT_ID: ${{secrets.GKE_PROJECT}}
+  PROJECT_ID: microrts-sample
   IMAGE: microrts.api
   TAG: 1.0.0
 
@@ -33,5 +33,5 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: gcr.io/$PROJECT_ID/microrts.api:1.0.0
+          tags: gcr.io/${{ env.PROJECT_ID }}/${{ env.IMAGE }}:${{ env.TAG }}
 
