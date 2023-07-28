@@ -1,0 +1,5 @@
+secretGenerator:
+  - name: my-secret
+    type: Opaque
+    envs:
+      - my-secret.env

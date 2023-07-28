@@ -15,7 +15,7 @@ import java.util.Set;
 
 public class DatabaseAccessor {
     private static String url =
-            System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "jdbc:mysql://localhost:3306/repo_details";
+            System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "jdbc:mysql://localhost:3306/configsdb";
     private static String user = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
     private static String password = System.getenv("DB_PWD") != null ? System.getenv("DB_PWD") : "root123!";
 
@@ -24,7 +24,7 @@ public class DatabaseAccessor {
                                     String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
 
         String sql =
-                "INSERT INTO ProjectDetails (repo, branch, last_commit, test_to_svc_mapping, service_to_path_mapping, " +
+                "INSERT INTO repository_info (repo, branch, last_commit, test_to_svc_mapping, service_to_path_mapping, " +
                         "monitoring_url, project_path) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
@@ -48,7 +48,7 @@ public class DatabaseAccessor {
     public static void deleteFromDb(String repo, String branch) throws SQLException {
 
         String sql =
-                "DELETE FROM ProjectDetails WHERE repo = ? AND branch = ?";
+                "DELETE FROM repository_info WHERE repo = ? AND branch = ?";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
              PreparedStatement pst = con.prepareStatement(sql)) {
@@ -66,7 +66,7 @@ public class DatabaseAccessor {
             throws IOException, SQLException {
 
         List<MicroserviceProject> projects = new ArrayList<>();
-        String sql = "SELECT * FROM ProjectDetails WHERE repo = ? AND branch = ? AND last_commit = ?";
+        String sql = "SELECT * FROM repository_info WHERE repo = ? AND branch = ? AND last_commit = ?";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
              PreparedStatement pst = con.prepareStatement(sql)) {
