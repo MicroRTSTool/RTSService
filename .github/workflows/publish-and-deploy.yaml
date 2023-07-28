@@ -63,9 +63,9 @@ jobs:
 
       - name: Build and Deploy Micro RTS API
         run: |
-          # Replace the following with appropriate Kustomize commands for each microservice
+          # microrts api
           ./kustomize build ./deployment | kubectl apply -f -
-          until kubectl get deployment cartservice -n $NAMESPACE; do sleep 1; done
-          kubectl rollout status deployment/cartservice -n $NAMESPACE
+          until kubectl get deployment micrortsapi -n $NAMESPACE; do sleep 1; done
+          kubectl rollout status deployment/micrortsapi -n $NAMESPACE
           kubectl get services -o wide
 
