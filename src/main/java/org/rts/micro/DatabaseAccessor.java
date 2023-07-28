@@ -81,14 +81,14 @@ public class DatabaseAccessor {
                 try {
                     String testToSvcMapping = rs.getString("test_to_svc_mapping");
                     String serviceToPathMapping = rs.getString("service_to_path_mapping");
-                    String monitoringUrl = rs.getString("monitoring_url");
+                    String observabilityToolURL = rs.getString("monitoring_url");
 
                     Map<String, String> serviceToPathMap =
                             serviceToPathMapping != null ? Utils.parseJson(serviceToPathMapping) : null;
                     Map<String, Set<String>> testToSvcMap =
                             testToSvcMapping != null ? Utils.getMapFromJson(testToSvcMapping) : null;
                     MicroserviceProject microserviceProject = new MicroserviceProject(repoName, branchName, commitHash, testToSvcMap,
-                            serviceToPathMap, monitoringUrl, rs.getString("project_path"));
+                            serviceToPathMap, observabilityToolURL, rs.getString("project_path"));
                     projects.add(microserviceProject);
 
                 } catch (IOException e) {

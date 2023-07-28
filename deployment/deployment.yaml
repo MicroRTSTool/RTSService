@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: micrortsapi
+  labels:
+    app: micrortsapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: micrortsapi
+  template:
+    metadata:
+      labels:
+        app: micrortsapi
+    spec:
+      containers:
+        - name: micrortsapi
+          image: gcr.io/microrts-sample/microrts.api:1.0.0
+          ports:
+            - containerPort: 8080

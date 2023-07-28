@@ -3,6 +3,7 @@ package org.rts.micro;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.rts.micro.models.MicroserviceProject;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,5 +102,22 @@ public class Utils {
     public static String matchingTestsArray(Set<String> matchingTests) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(matchingTests);
+    }
+
+    public static Set<String> affectedServices(MicroserviceProject project, List<String> changedFiles) {
+        Map<String, String> svcPathMappings = project.getServiceToPathMapping();
+
+        Set<String> affectedServices = new HashSet<>();
+        if (svcPathMappings != null) {
+            for (String fileName : changedFiles) {
+                for (Map.Entry<String, String> entry : svcPathMappings.entrySet()) {
+                    if (fileName.startsWith(Utils.extractRelativePath(entry.getValue()))) {
+                        affectedServices.add(entry.getKey());
+                        break;
+                    }
+                }
+            }
+        }
+        return affectedServices;
     }
 }

@@ -16,14 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class JaegerServiceDependencyMapper extends ServiceDependencyMapper {
+public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
 
     static class Dependency {
         public String parent;
         public String child;
-        public int callCount;
-
-        // Getters and setters omitted for brevity
     }
 
     public Map<String, Set<String>> getSvcDependencies(String monitoringServiceUrl) throws Exception {

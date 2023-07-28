@@ -25,6 +25,4 @@ public abstract class GitHubRepoAnalyzer {
     public abstract void analyzeRepo(GHRepository repo, String branchName, String commitHash, String monitoringURL)
             throws IOException, GitAPIException, InterruptedException, SQLException;
 
-
-
 }

@@ -23,7 +23,7 @@ public class RTSelector {
         gitHubRepoAnalyzer.analyzeRepo(repo, branchName, commitHash, monitoringURL);
     }
 
-    public static String selectTests(String repoName, String branchName, int prNumber, String monitoringUrl) throws Exception {
+    public static String selectTests(String repoName, String branchName, int prNumber, String observabilityToolURL) throws Exception {
         String latestCommit = GitHubRepoAnalyzer.getLatestCommit(repoName, branchName);
         List<MicroserviceProject> projects = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
         if (projects.isEmpty()) {
@@ -33,14 +33,14 @@ public class RTSelector {
         // Get the service dependencies
         ServiceDependencyMapper mapper = new JaegerServiceDependencyMapper();
         Map<String, Set<String>> serviceDependenciesMap =
-                mapper.getSvcDependencies(monitoringUrl);
+                mapper.getSvcDependencies(observabilityToolURL);
 
         StringBuilder stringBuilder = new StringBuilder();
         Set<String> allAffectedServices = new HashSet<>();
         for (MicroserviceProject microserviceProject : projects) {
             System.out.println("Analyzing project: " + microserviceProject.getProjectPath());
             // Get the affected services
-            Set<String> affectedServices = GitHubPRAnalyzer.affectedServices(microserviceProject, changedFiles);
+            Set<String> affectedServices = Utils.affectedServices(microserviceProject, changedFiles);
             // Given service dependencies and affected services, get the extended graph of affected services
             if (affectedServices != null || !affectedServices.isEmpty()) {
                     allAffectedServices.addAll(affectedServices);

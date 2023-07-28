@@ -9,18 +9,18 @@ public class MicroserviceProject {
     private String lastCommit;
     private Map<String, Set<String>> testToSvcMapping;
     private Map<String, String> serviceToPathMapping;
-    private String monitoringUrl;
+    private String observabilityToolURL;
     private String projectPath;
 
     public MicroserviceProject(String repo, String branch, String lastCommit,
                                Map<String, Set<String>> testToSvcMapping, Map<String, String> serviceToPathMapping,
-                               String monitoringUrl, String projectPath) {
+                               String observabilityToolURL, String projectPath) {
         this.repo = repo;
         this.branch = branch;
         this.lastCommit = lastCommit;
         this.testToSvcMapping = testToSvcMapping;
         this.serviceToPathMapping = serviceToPathMapping;
-        this.monitoringUrl = monitoringUrl;
+        this.observabilityToolURL = observabilityToolURL;
         this.projectPath = projectPath;
     }
 
