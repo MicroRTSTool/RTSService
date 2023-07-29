@@ -18,15 +18,17 @@ COPY ./src ./src
 RUN gradle bootJar --no-daemon
 
 FROM ballerina/ballerina:2201.7.0
+# FROM openjdk:11-jre-slim
 
-RUN mkdir -p /app \
+RUN mkdir -p /work-dir \
     && addgroup troupe \
     && adduser -S -s /bin/bash -g 'ballerina' -G troupe -D ballerina \
     && apk upgrade \
-    && chown -R ballerina:troupe /app \
+    && chown -R ballerina:troupe /work-dir \
+
 
 # Set the current working directory inside the image
-WORKDIR /app
+WORKDIR /work-dir
 
 # Copy the jar file from builder image, into the current image
 COPY --from=builder /app/build/libs/MicroRTS-1.0.0.jar ./app.jar
