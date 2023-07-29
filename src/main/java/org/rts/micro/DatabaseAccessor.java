@@ -25,6 +25,7 @@ public class DatabaseAccessor {
 
     public static void insertIntoDb(String repo, String branch, String lastCommit, String testToSvcMapping,
                                     String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
+        logger.info("Trying to connect to " + url + " with user " + user);
 
         String sql =
                 "INSERT INTO repository_info (repo, branch, last_commit, test_to_svc_mapping, service_to_path_mapping, " +
@@ -50,7 +51,7 @@ public class DatabaseAccessor {
     }
 
     public static void deleteFromDb(String repo, String branch) throws SQLException {
-
+        logger.info("Trying to connect to " + url + " with user " + user);
         String sql =
                 "DELETE FROM repository_info WHERE repo = ? AND branch = ?";
 
@@ -63,12 +64,15 @@ public class DatabaseAccessor {
             logger.info("Deleted previous entries for repo: " + repo + ", branch: " + branch);
 
         } catch (SQLException ex) {
+            logger.error("Error deleting previous entries for repo: " + repo + ", branch: " + branch);
+            logger.error(ex.getMessage());
             throw ex;
         }
     }
 
     public static List<MicroserviceProject> fetchDataFromDb(String repoName, String branchName, String commitHash)
             throws IOException, SQLException {
+        logger.info("Trying to connect to " + url + " with user " + user);
 
         List<MicroserviceProject> projects = new ArrayList<>();
         String sql = "SELECT * FROM repository_info WHERE repo = ? AND branch = ? AND last_commit = ?";
