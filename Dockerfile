@@ -17,8 +17,13 @@ COPY ./src ./src
 # Build the application
 RUN gradle bootJar --no-daemon
 
-# Use the official OpenJDK 11 as a base image
-FROM openjdk:11-jre-slim
+FROM ballerina/ballerina:2201.7.0
+
+RUN mkdir -p /app \
+    && addgroup troupe \
+    && adduser -S -s /bin/bash -g 'ballerina' -G troupe -D ballerina \
+    && apk upgrade \
+    && chown -R ballerina:troupe /app \
 
 # Set the current working directory inside the image
 WORKDIR /app
