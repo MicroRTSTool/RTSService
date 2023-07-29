@@ -13,6 +13,7 @@ public class RTSController {
     @GetMapping("/configure")
     public ResponseEntity<String> configureRepo(@RequestParam String repoName, @RequestParam String branchName,
                                                 @RequestParam String monitoringURL) {
+        System.out.println("Configuring Repo: " + repoName + ", Branch: " + branchName + ", Monitoring URL: " + monitoringURL);
         try {
             RTSelector.configureRepo(repoName, branchName, monitoringURL);
         } catch (Exception e) {

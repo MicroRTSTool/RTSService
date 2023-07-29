@@ -1,9 +1,0 @@
-apiVersion: v1
-data:
-  DB_HOST: amRiYzpteXNxbDovLzM1LjIyMi4xMjMuMjozMzA2L2NvbmZpZ3NkYg==
-  DB_PWD: bWljcm9ydHM=
-  DB_USER: cm9vdA==
-kind: Secret
-metadata:
-  name: my-secret-6279b7khf7
-type: Opaque
