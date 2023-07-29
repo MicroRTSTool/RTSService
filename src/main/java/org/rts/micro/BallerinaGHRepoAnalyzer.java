@@ -28,6 +28,8 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
         System.setProperty("BALLERINA_DEV_CENTRAL", "true");
 
         String repoUrl = repo.getHttpTransportUrl();
+        logger.info("repo url is: " + repoUrl);
+
         // Clear previous entries for the same repo and branch
         DatabaseAccessor.deleteFromDb(repo.getFullName(), branchName);
 
