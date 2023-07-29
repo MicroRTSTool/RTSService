@@ -21,20 +21,17 @@ spec:
               valueFrom:
                secretKeyRef:
                  name: my-secret
-                 key: my-secret
-                 value: DB_HOST
+                 key: DB_HOST
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
                   name: my-secret
-                  key: my-secret
-                  value: DB_USER
+                  key: DB_USER
             - name: DB_PWD
               valueFrom:
                 secretKeyRef:
                   name: my-secret
-                  key: my-secret
-                  value: DB_PWD
+                  key: DB_PWD
           image: gcr.io/microrts-sample/microrts.api:1.0.0
           ports:
             - containerPort: 8080
