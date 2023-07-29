@@ -24,8 +24,7 @@ RUN mkdir -p /work-dir \
     && addgroup troupe \
     && adduser -S -s /bin/bash -g 'ballerina' -G troupe -D ballerina \
     && apk upgrade \
-    && chown -R ballerina:troupe /work-dir \
-
+    && chown -R ballerina:troupe /work-dir
 
 # Set the current working directory inside the image
 WORKDIR /work-dir
