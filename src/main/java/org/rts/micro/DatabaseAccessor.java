@@ -1,6 +1,8 @@
 package org.rts.micro;
 
 import org.rts.micro.models.MicroserviceProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -19,6 +21,7 @@ public class DatabaseAccessor {
     private static String user = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
     private static String password = System.getenv("DB_PWD") != null ? System.getenv("DB_PWD") : "root123!";
 
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseAccessor.class);
 
     public static void insertIntoDb(String repo, String branch, String lastCommit, String testToSvcMapping,
                                     String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
@@ -39,6 +42,7 @@ public class DatabaseAccessor {
             pst.setString(7, projectPath);
 
             pst.executeUpdate();
+            logger.info("Inserted new entry for repo: " + repo + ", branch: " + branch + ", commit: " + lastCommit);
 
         } catch (SQLException ex) {
             throw ex;
@@ -56,6 +60,7 @@ public class DatabaseAccessor {
             pst.setString(1, repo);
             pst.setString(2, branch);
             pst.executeUpdate();
+            logger.info("Deleted previous entries for repo: " + repo + ", branch: " + branch);
 
         } catch (SQLException ex) {
             throw ex;
@@ -95,6 +100,7 @@ public class DatabaseAccessor {
                     throw e;
                 }
             }
+            logger.info("Fetched data from db for repo: " + repoName + ", branch: " + branchName + ", commit: " + commitHash);
         } catch (SQLException ex) {
             throw ex;
         }

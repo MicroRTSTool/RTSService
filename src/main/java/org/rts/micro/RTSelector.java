@@ -5,6 +5,8 @@ import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
 import org.kohsuke.github.GitHubBuilder;
 import org.rts.micro.models.MicroserviceProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -13,12 +15,16 @@ import java.util.Set;
 
 public class RTSelector {
 
+    private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
+
     public static void configureRepo(String repoName, String branchName, String monitoringURL) throws Exception {
         // Get the affected services
         GitHub github = new GitHubBuilder().build();
         GHRepository repo = github.getRepository(repoName);
+        logger.info("Got the github repo");
         GHCommit commit = repo.getCommit(repo.getBranch(branchName).getSHA1());
         String commitHash = commit.getSHA1();
+        logger.info("Got the commit hash for the branch " + commitHash);
         GitHubRepoAnalyzer gitHubRepoAnalyzer = new BallerinaGHRepoAnalyzer();
         gitHubRepoAnalyzer.analyzeRepo(repo, branchName, commitHash, monitoringURL);
     }

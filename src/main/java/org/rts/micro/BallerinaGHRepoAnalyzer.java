@@ -3,6 +3,8 @@ package org.rts.micro;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.kohsuke.github.GHRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,8 +17,12 @@ import java.util.stream.Stream;
 
 public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
 
+    private static final Logger logger = LoggerFactory.getLogger(BallerinaGHRepoAnalyzer.class);
+
     public void analyzeRepo(GHRepository repo, String branchName, String commitHash, String monitoringURL)
             throws IOException, GitAPIException, InterruptedException, SQLException {
+        logger.info("Started analyzing repo: " + repo.getFullName() + ", branch: " + branchName + ", commit: " + commitHash);
+
         // TODO: Remove when pushed to prod
         //  Set environment variable
         System.setProperty("BALLERINA_DEV_CENTRAL", "true");

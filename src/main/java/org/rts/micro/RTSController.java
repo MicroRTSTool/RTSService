@@ -1,5 +1,7 @@
 package org.rts.micro;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,18 +11,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RTSController {
 
+    private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
+
     @CrossOrigin
     @GetMapping("/configure")
     public ResponseEntity<String> configureRepo(@RequestParam String repoName, @RequestParam String branchName,
                                                 @RequestParam String monitoringURL) {
-        System.out.println("Configuring Repo: " + repoName + ", Branch: " + branchName + ", Monitoring URL: " + monitoringURL);
+        logger.info("Configuring Repo: " + repoName + ", Branch: " + branchName + ", Monitoring URL: " + monitoringURL);
         try {
             RTSelector.configureRepo(repoName, branchName, monitoringURL);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
         String message = "Successfully configured Repo: " + repoName + ", Branch: " + branchName;
-        System.out.println(message);
+        logger.info("Successfully configured Repo: " + repoName + ", Branch: " + branchName);
         return ResponseEntity.ok(message);
     }
 
