@@ -36,6 +36,7 @@ public class RTSelector {
             throw new Exception("No data found for the given repo, branch and commit hash. Please configure the repo first.");
         }
         List<String> changedFiles = GitHubPRAnalyzer.getChangedFiles(repoName, prNumber);
+        logger.info("Got the changed files");
         // Get the service dependencies
         ServiceDependencyMapper mapper = new JaegerServiceDependencyMapper();
         Map<String, Set<String>> serviceDependenciesMap =

@@ -8,7 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,14 +29,15 @@ public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
     }
 
     public Map<String, Set<String>> getSvcDependencies(String monitoringServiceUrl) throws Exception {
-        List<String> serviceList = getAllServices(monitoringServiceUrl);
+//        List<String> serviceList = getAllServices(monitoringServiceUrl);
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Set<String>> childToParentsMap = new HashMap<>();
 
-        for (String service : serviceList) {
-            String ddgJson = getDDG(service, monitoringServiceUrl);
-            addToSvcMap(ddgJson, objectMapper, childToParentsMap);
-        }
+//        for (String service : serviceList) {
+//            String ddgJson = getDDG(service, monitoringServiceUrl);
+//            addToSvcMap(ddgJson, objectMapper, childToParentsMap);
+//        }
+        addToSvcMap(getDDG(monitoringServiceUrl), objectMapper, childToParentsMap);
         Map<String, Set<String>> affectedServicesMap = getMapOfAffectedServices(childToParentsMap);
         return affectedServicesMap;
     }
@@ -81,6 +87,28 @@ public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
             }
         }
         return serviceList;
+    }
+
+    public static String getDDG(String observabilityURL) throws Exception {
+        long endTs = Instant.now().toEpochMilli();
+        long lookback = 6 * 60 * 60 * 1000; // 6 hours in milliseconds
+
+        String url = String.format("%s/api/dependencies?endTs=%d&lookback=%d",
+                observabilityURL, endTs, lookback);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .GET()
+                .build();
+
+        HttpClient httpClient = HttpClient.newHttpClient();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            return response.body();
+        } else {
+            throw new Exception("Failed to retrieve DDG: " + response.statusCode());
+        }
     }
 
     private static String getDDG(String serviceName, String monitoringSvcUrl) throws Exception {
