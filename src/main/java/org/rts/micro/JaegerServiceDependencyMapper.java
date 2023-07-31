@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -23,9 +25,13 @@ import java.util.Set;
 
 public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
 
+    private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
+
     static class Dependency {
         public String parent;
         public String child;
+
+        private int callCount;
     }
 
     public Map<String, Set<String>> getSvcDependencies(String monitoringServiceUrl) throws Exception {
@@ -105,6 +111,7 @@ public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() == 200) {
+            logger.info("Got the DDG from Jaeger \n" + response.body());
             return response.body();
         } else {
             throw new Exception("Failed to retrieve DDG: " + response.statusCode());
