@@ -1,5 +1,6 @@
 package org.rts.micro;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,11 +28,11 @@ public class JaegerServiceDependencyMapper implements ServiceDependencyMapper {
 
     private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     static class Dependency {
         public String parent;
         public String child;
 
-        private int callCount;
     }
 
     public Map<String, Set<String>> getSvcDependencies(String monitoringServiceUrl) throws Exception {
