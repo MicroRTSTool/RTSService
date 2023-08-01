@@ -9,6 +9,11 @@ public class MicroserviceProject {
     private String lastCommit;
     private Map<String, Set<String>> testToSvcMapping;
     private Map<String, String> serviceToPathMapping;
+
+    public String getObservabilityToolURL() {
+        return observabilityToolURL;
+    }
+
     private String observabilityToolURL;
     private String projectPath;
 

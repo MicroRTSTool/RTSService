@@ -8,6 +8,7 @@ import org.rts.micro.models.MicroserviceProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class RTSelector {
         gitHubRepoAnalyzer.analyzeRepo(repo, branchName, commitHash, monitoringURL);
     }
 
-    public static String selectTests(String repoName, String branchName, int prNumber, String observabilityToolURL) throws Exception {
+    public static Map<String, Set<String>> selectTests(String repoName, String branchName, int prNumber) throws Exception {
         String latestCommit = GitHubRepoAnalyzer.getLatestCommit(repoName, branchName);
         List<MicroserviceProject> projects = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
         if (projects.isEmpty()) {
@@ -40,9 +41,8 @@ public class RTSelector {
         // Get the service dependencies
         ServiceDependencyMapper mapper = new JaegerServiceDependencyMapper();
         Map<String, Set<String>> serviceDependenciesMap =
-                mapper.getSvcDependencies(observabilityToolURL);
+                mapper.getSvcDependencies(projects.get(0).getObservabilityToolURL());
 
-        StringBuilder stringBuilder = new StringBuilder();
         Set<String> allAffectedServices = new HashSet<>();
         for (MicroserviceProject microserviceProject : projects) {
             System.out.println("Analyzing project: " + microserviceProject.getProjectPath());
@@ -54,21 +54,18 @@ public class RTSelector {
             }
         }
         Set<String> extendedAffectedServices = Utils.getExtendedAffectedServices(serviceDependenciesMap, allAffectedServices);
+        Map<String, Set<String>> testsToSvcMappings = new HashMap<>();
         // Get the matching tests
         for (MicroserviceProject microserviceProject : projects) {
-            Map<String, Set<String>> testToSvcMappings = microserviceProject.getTestToSvcMapping();
+            Map<String, Set<String>> testsMap = microserviceProject.getTestToSvcMapping();
 
-            if (testToSvcMappings != null && !testToSvcMappings.isEmpty() &&
+            if (testsMap != null && !testsMap.isEmpty() &&
                     extendedAffectedServices != null && !extendedAffectedServices.isEmpty()) {
-                Set<String> matchingTests = getMatchingTests(extendedAffectedServices, testToSvcMappings);
-                if (matchingTests != null && !matchingTests.isEmpty()) {
-                    stringBuilder.append(Utils.extractRelativePath(microserviceProject.getProjectPath()) +
-                            " : " + Utils.matchingTestsArray(matchingTests));
-                    stringBuilder.append("\n");
-                }
+                Set<String> matchingTests = getMatchingTests(extendedAffectedServices, testsMap);
+                testsToSvcMappings.put(Utils.extractRelativePath(microserviceProject.getProjectPath()), matchingTests);
             }
         }
-        return stringBuilder.toString();
+        return testsToSvcMappings;
     }
 
     private static Set<String> getMatchingTests(Set<String> affectedServices, Map<String, Set<String>> testToServicesMap) {
