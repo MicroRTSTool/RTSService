@@ -21,15 +21,20 @@ public class MicroserviceProject {
                                Map<String, Set<String>> testToSvcMapping, Map<String, String> serviceToPathMapping,
                                String observabilityToolURL, String projectPath) {
         this.repo = repo;
+        this.pr = pr;
         this.testToSvcMapping = testToSvcMapping;
         this.serviceToPathMapping = serviceToPathMapping;
         this.observabilityToolURL = observabilityToolURL;
         this.projectPath = projectPath;
     }
 
-    public Map<String, Set<String>> getTestToSvcMapping() { return testToSvcMapping; }
+    public Map<String, Set<String>> getTestToSvcMapping() {
+        return testToSvcMapping;
+    }
 
-    public Map<String, String> getServiceToPathMapping() { return serviceToPathMapping; }
+    public Map<String, String> getServiceToPathMapping() {
+        return serviceToPathMapping;
+    }
 
     public String getProjectPath() {
         return projectPath;
