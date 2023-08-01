@@ -1,5 +1,8 @@
 package org.rts.micro;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,8 +14,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TestExecutor {
+    private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
 
     public static String executeAllTests(String repoName, int prNumber, Set<String> paths) throws IOException, InterruptedException {
+
+
         Path tempDir = Utils.cloneRepo(repoName, prNumber);
 
         List<String> outputs = new ArrayList<>();
@@ -58,6 +64,7 @@ public class TestExecutor {
                     .filter(p -> Files.isDirectory(p) && p.getFileName().toString().startsWith(path))
                     .map(Path::toFile)
                     .collect(Collectors.toList());
+            logger.info("Matching dirs: " + matchingDirs.toString());
 
             for (File dir : matchingDirs) {
                 // Start a process builder to execute the command
@@ -75,7 +82,7 @@ public class TestExecutor {
                 process.waitFor();
             }
         }
-
+        logger.info("Outputs: " + outputs.toString());
         return String.join("\n", outputs);
     }
 
