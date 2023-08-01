@@ -16,8 +16,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class Utils {
+
+    public static final String CLONE_DIR_PATH = "github-pr";
+
     public static String extractRelativePath(String fullPath) {
-        String[] parts = fullPath.split("gitCloneTempDir[0-9]+/");
+        String[] parts = fullPath.split(CLONE_DIR_PATH + "[0-9]+/");
         if (parts.length > 1) {
             return parts[1];
         }
@@ -124,7 +127,7 @@ public class Utils {
     public static Path cloneRepo(String repoName, int prNumber) throws IOException, InterruptedException {
         String repositoryUrl = "https://github.com/" + repoName + ".git";
         // Clone the main repo to a temp directory
-        Path tempDir = Files.createTempDirectory("github-pr");
+        Path tempDir = Files.createTempDirectory(CLONE_DIR_PATH);
         System.out.println("Created temp directory: " + tempDir);
         ProcessBuilder cloneProcess = new ProcessBuilder("git", "clone", repositoryUrl, tempDir.toString());
         cloneProcess.inheritIO().start().waitFor();

@@ -17,9 +17,9 @@ import java.util.Set;
 
 public class DatabaseAccessor {
     private static String url =
-            System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "jdbc:mysql://10.101.160.3:3306/configsdb";
+            System.getenv("DB_HOST") != null ? System.getenv("DB_HOST") : "jdbc:mysql://localhost:3306/configsdb";
     private static String user = System.getenv("DB_USER") != null ? System.getenv("DB_USER") : "root";
-    private static String password = System.getenv("DB_PWD") != null ? System.getenv("DB_PWD") : "microrts";
+    private static String password = System.getenv("DB_PWD") != null ? System.getenv("DB_PWD") : "root123!";
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAccessor.class);
 
