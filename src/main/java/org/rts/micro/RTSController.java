@@ -37,12 +37,11 @@ public class RTSController {
 
     @CrossOrigin
     @GetMapping("/test-results")
-    public ResponseEntity<String> executeTests(@RequestParam int pr, @RequestParam String repoName,
-                               @RequestParam String branchName, @RequestParam Set<String> paths) {
+    public ResponseEntity<String> executeTests(@RequestParam int pr, @RequestParam String repoName, @RequestParam Set<String> paths) {
 
         try {
             String combinedOutput = executeAllTests(repoName, pr, paths);
-            logger.info("Successfully executed tests for Repo: " + repoName + ", Branch: " + branchName + ", PR: " + pr);
+            logger.info("Successfully executed tests for Repo: " + repoName + ", PR: " + pr);
             return ResponseEntity.ok(combinedOutput);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
