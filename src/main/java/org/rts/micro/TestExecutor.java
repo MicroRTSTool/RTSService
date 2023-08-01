@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class TestExecutor {
 
     public static String executeAllTests(String repoName, int prNumber, Set<String> paths) throws IOException, InterruptedException {
-        Path tempDir = cloneRepo(repoName, prNumber);
+        Path tempDir = Utils.cloneRepo(repoName, prNumber);
 
         List<String> outputs = new ArrayList<>();
 
@@ -45,7 +45,7 @@ public class TestExecutor {
 
     public static String executeSelectedTests(String repoName, int prNumber,
                                               Map<String,Set<String>> testsMap) throws IOException, InterruptedException {
-        Path tempDir = cloneRepo(repoName, prNumber);
+        Path tempDir = Utils.cloneRepo(repoName, prNumber);
 
         List<String> outputs = new ArrayList<>();
 
@@ -79,23 +79,6 @@ public class TestExecutor {
         return String.join("\n", outputs);
     }
 
-    private static Path cloneRepo(String repoName, int prNumber) throws IOException, InterruptedException {
-        String repositoryUrl = "https://github.com/" + repoName + ".git";
-        // Clone the main repo to a temp directory
-        Path tempDir = Files.createTempDirectory("github-pr");
-        System.out.println("Created temp directory: " + tempDir);
-        ProcessBuilder cloneProcess = new ProcessBuilder("git", "clone", repositoryUrl, tempDir.toString());
-        cloneProcess.inheritIO().start().waitFor();
 
-        // Fetch the specific PR
-        String branchName = "pr-" + prNumber;
-        ProcessBuilder fetchPRProcess = new ProcessBuilder("git", "fetch", "origin", "pull/" + prNumber + "/head:" + branchName);
-        fetchPRProcess.directory(tempDir.toFile()).inheritIO().start().waitFor();
-
-        // Checkout the PR branch
-        ProcessBuilder checkoutProcess = new ProcessBuilder("git", "checkout", branchName);
-        checkoutProcess.directory(tempDir.toFile()).inheritIO().start().waitFor();
-        return tempDir;
-    }
 
 }

@@ -1,9 +1,5 @@
 package org.rts.micro;
 
-import org.kohsuke.github.GHCommit;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GitHubBuilder;
 import org.rts.micro.models.MicroserviceProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,21 +14,14 @@ public class RTSelector {
 
     private static final Logger logger = LoggerFactory.getLogger(RTSController.class);
 
-    public static void configureRepo(String repoName, String branchName, String monitoringURL) throws Exception {
-        // Get the affected services
-        GitHub github = new GitHubBuilder().build();
-        GHRepository repo = github.getRepository(repoName);
-        logger.info("Got the github repo");
-        GHCommit commit = repo.getCommit(repo.getBranch(branchName).getSHA1());
-        String commitHash = commit.getSHA1();
-        logger.info("Got the commit hash for the branch " + commitHash);
+    public static void configureRepo(String repoName, int pr, String monitoringURL) throws Exception {
+        // static analysis
         GitHubRepoAnalyzer gitHubRepoAnalyzer = new BallerinaGHRepoAnalyzer();
-        gitHubRepoAnalyzer.analyzeRepo(repo, branchName, commitHash, monitoringURL);
+        gitHubRepoAnalyzer.analyzeRepo(repoName, pr, monitoringURL);
     }
 
-    public static Map<String, Set<String>> selectTests(String repoName, String branchName, int prNumber) throws Exception {
-        String latestCommit = GitHubRepoAnalyzer.getLatestCommit(repoName, branchName);
-        List<MicroserviceProject> projects = DatabaseAccessor.fetchDataFromDb(repoName, branchName, latestCommit);
+    public static Map<String, Set<String>> selectTests(String repoName, int prNumber) throws Exception {
+        List<MicroserviceProject> projects = DatabaseAccessor.fetchDataFromDb(repoName, prNumber);
         if (projects.isEmpty()) {
             throw new Exception("No data found for the given repo, branch and commit hash. Please configure the repo first.");
         }

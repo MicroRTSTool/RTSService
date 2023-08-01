@@ -19,26 +19,14 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
 
     private static final Logger logger = LoggerFactory.getLogger(BallerinaGHRepoAnalyzer.class);
 
-    public void analyzeRepo(GHRepository repo, String branchName, String commitHash, String monitoringURL)
+    public void analyzeRepo(String repoName, int pr, String monitoringURL)
             throws IOException, GitAPIException, InterruptedException, SQLException {
-        logger.info("Started analyzing repo: " + repo.getFullName() + ", branch: " + branchName + ", commit: " + commitHash);
+        logger.info("Started analyzing repo: " + repoName + ", PR: " + pr);
 
-        // TODO: Remove when pushed to prod
-        //  Set environment variable
-        System.setProperty("BALLERINA_DEV_CENTRAL", "true");
+        // Clear previous entries for the same repo and pr
+        DatabaseAccessor.deleteFromDb(repoName, pr);
 
-        String repoUrl = repo.getHttpTransportUrl();
-        logger.info("repo url is: " + repoUrl);
-
-        // Clear previous entries for the same repo and branch
-        DatabaseAccessor.deleteFromDb(repo.getFullName(), branchName);
-
-        Path tempDir = Files.createTempDirectory("gitCloneTempDir");
-        Git.cloneRepository()
-                .setURI(repoUrl)
-                .setBranch(branchName)
-                .setDirectory(tempDir.toFile())
-                .call();
+        Path tempDir = Utils.cloneRepo(repoName, pr);
 
         // Find Ballerina.toml files
         try (Stream<Path> paths = Files.walk(tempDir)) {
@@ -77,7 +65,7 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
                 String svcPathMappingsContent = Utils.readContentIfPresentAndNotEmpty(parentDir, SVC_PATH_MAPPINGS_JSON);
 
                 // Insert into DB
-                DatabaseAccessor.insertIntoDb(repo.getFullName(), branchName, commitHash,
+                DatabaseAccessor.insertIntoDb(repoName, pr,
                         testSvcMappingsContent, svcPathMappingsContent, monitoringURL, packageRoot);
             }
         }

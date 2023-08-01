@@ -22,29 +22,17 @@ public class RTSController {
 
     @CrossOrigin
     @PostMapping("/configured-repos")
-    public ResponseEntity<String> configureRepo(@RequestParam String repoName, @RequestParam String branchName,
+    public ResponseEntity<String> configureRepo(@RequestParam String repoName, @RequestParam int pr,
                                                 @RequestParam String observabilityURL) {
-        logger.info("Configuring Repo: " + repoName + ", Branch: " + branchName + ", Monitoring URL: " + observabilityURL);
+        logger.info("Configuring Repo: " + repoName + ", PR: " + pr + ", Monitoring URL: " + observabilityURL);
         try {
-            RTSelector.configureRepo(repoName, branchName, observabilityURL);
+            RTSelector.configureRepo(repoName, pr, observabilityURL);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-        String message = "Successfully configured Repo: " + repoName + ", Branch: " + branchName;
-        logger.info("Successfully configured Repo: " + repoName + ", Branch: " + branchName);
+        String message = "Successfully configured Repo: " + repoName + ", PR: " + pr;
+        logger.info("Successfully configured Repo: " + repoName + ", PR: " + pr);
         return ResponseEntity.ok(message);
-    }
-
-    @CrossOrigin
-    @GetMapping("/selected-tests")
-    public ResponseEntity<String> selectTests(@RequestParam int pr, @RequestParam String repoName,
-                                              @RequestParam String branchName) {
-        try {
-            String selectedTests = RTSelector.selectTests(repoName, branchName, pr).toString();
-            return ResponseEntity.ok(selectedTests);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
     }
 
     @CrossOrigin
@@ -63,10 +51,9 @@ public class RTSController {
     @CrossOrigin
     @GetMapping("/selected-test-results")
     public ResponseEntity<String> selectTests(@RequestParam int pr, @RequestParam String repoName,
-                                              @RequestParam String branchName,
                                                        @RequestParam(defaultValue = "true") boolean enableExecution) {
         try {
-            Map<String, Set<String>> selectedTests = RTSelector.selectTests(repoName, branchName, pr);
+            Map<String, Set<String>> selectedTests = RTSelector.selectTests(repoName, pr);
             if (!enableExecution) {
                 return ResponseEntity.ok(selectedTests.toString());
             }

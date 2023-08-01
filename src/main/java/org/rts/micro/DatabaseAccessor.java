@@ -23,66 +23,64 @@ public class DatabaseAccessor {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAccessor.class);
 
-    public static void insertIntoDb(String repo, String branch, String lastCommit, String testToSvcMapping,
+    public static void insertIntoDb(String repo, int pr, String testToSvcMapping,
                                     String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
         logger.info("Trying to connect to " + url + " with user " + user);
 
         String sql =
-                "INSERT INTO repository_info (repo, branch, last_commit, test_to_svc_mapping, service_to_path_mapping, " +
-                        "monitoring_url, project_path) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "INSERT INTO repository_info (repo, pr, test_to_svc_mapping, service_to_path_mapping, " +
+                        "observability_url, project_path) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
              PreparedStatement pst = con.prepareStatement(sql)) {
 
             pst.setString(1, repo);
-            pst.setString(2, branch);
-            pst.setString(3, lastCommit);
-            pst.setString(4, testToSvcMapping);
-            pst.setString(5, serviceToPathMapping);
-            pst.setString(6, monitoringURL);
-            pst.setString(7, projectPath);
+            pst.setInt(2, pr);
+            pst.setString(3, testToSvcMapping);
+            pst.setString(4, serviceToPathMapping);
+            pst.setString(5, monitoringURL);
+            pst.setString(6, projectPath);
 
             pst.executeUpdate();
-            logger.info("Inserted new entry for repo: " + repo + ", branch: " + branch + ", commit: " + lastCommit);
+            logger.info("Inserted new entry for repo: " + repo + ", pr: " + pr);
 
         } catch (SQLException ex) {
             throw ex;
         }
     }
 
-    public static void deleteFromDb(String repo, String branch) throws SQLException {
+    public static void deleteFromDb(String repo, int pr) throws SQLException {
         logger.info("Trying to connect to " + url + " with user " + user);
         String sql =
-                "DELETE FROM repository_info WHERE repo = ? AND branch = ?";
+                "DELETE FROM repository_info WHERE repo = ? AND pr = ?";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
              PreparedStatement pst = con.prepareStatement(sql)) {
 
             pst.setString(1, repo);
-            pst.setString(2, branch);
+            pst.setInt(2, pr);
             pst.executeUpdate();
-            logger.info("Deleted previous entries for repo: " + repo + ", branch: " + branch);
+            logger.info("Deleted previous entries for repo: " + repo + ", pr: " + pr);
 
         } catch (SQLException ex) {
-            logger.error("Error deleting previous entries for repo: " + repo + ", branch: " + branch);
+            logger.error("Error deleting previous entries for repo: " + repo + ", pr: " + pr);
             logger.error(ex.getMessage());
             throw ex;
         }
     }
 
-    public static List<MicroserviceProject> fetchDataFromDb(String repoName, String branchName, String commitHash)
+    public static List<MicroserviceProject> fetchDataFromDb(String repoName, int pr)
             throws IOException, SQLException {
         logger.info("Trying to connect to " + url + " with user " + user);
 
         List<MicroserviceProject> projects = new ArrayList<>();
-        String sql = "SELECT * FROM repository_info WHERE repo = ? AND branch = ? AND last_commit = ?";
+        String sql = "SELECT * FROM repository_info WHERE repo = ? AND pr = ? ";
 
         try (Connection con = DriverManager.getConnection(url, user, password);
              PreparedStatement pst = con.prepareStatement(sql)) {
 
             pst.setString(1, repoName);
-            pst.setString(2, branchName);
-            pst.setString(3, commitHash);
+            pst.setInt(2, pr);
 
             ResultSet rs = pst.executeQuery();
 
@@ -96,7 +94,7 @@ public class DatabaseAccessor {
                             serviceToPathMapping != null ? Utils.parseJson(serviceToPathMapping) : null;
                     Map<String, Set<String>> testToSvcMap =
                             testToSvcMapping != null ? Utils.getMapFromJson(testToSvcMapping) : null;
-                    MicroserviceProject microserviceProject = new MicroserviceProject(repoName, branchName, commitHash, testToSvcMap,
+                    MicroserviceProject microserviceProject = new MicroserviceProject(repoName, pr, testToSvcMap,
                             serviceToPathMap, observabilityToolURL, rs.getString("project_path"));
                     projects.add(microserviceProject);
 
@@ -104,7 +102,7 @@ public class DatabaseAccessor {
                     throw e;
                 }
             }
-            logger.info("Fetched data from db for repo: " + repoName + ", branch: " + branchName + ", commit: " + commitHash);
+            logger.info("Fetched data from db for repo: " + repoName + ", pr: " + pr);
         } catch (SQLException ex) {
             throw ex;
         }

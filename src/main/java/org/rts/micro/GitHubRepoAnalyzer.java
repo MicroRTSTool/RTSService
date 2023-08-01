@@ -22,7 +22,7 @@ public abstract class GitHubRepoAnalyzer {
         return repo.getBranch(branchName).getSHA1();
     }
 
-    public abstract void analyzeRepo(GHRepository repo, String branchName, String commitHash, String monitoringURL)
+    public abstract void analyzeRepo(String repoName, int pr, String monitoringURL)
             throws IOException, GitAPIException, InterruptedException, SQLException;
 
 }

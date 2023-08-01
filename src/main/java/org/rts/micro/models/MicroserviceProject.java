@@ -5,8 +5,8 @@ import java.util.Set;
 
 public class MicroserviceProject {
     private String repo;
-    private String branch;
-    private String lastCommit;
+
+    private int pr;
     private Map<String, Set<String>> testToSvcMapping;
     private Map<String, String> serviceToPathMapping;
 
@@ -17,12 +17,10 @@ public class MicroserviceProject {
     private String observabilityToolURL;
     private String projectPath;
 
-    public MicroserviceProject(String repo, String branch, String lastCommit,
+    public MicroserviceProject(String repo, int pr,
                                Map<String, Set<String>> testToSvcMapping, Map<String, String> serviceToPathMapping,
                                String observabilityToolURL, String projectPath) {
         this.repo = repo;
-        this.branch = branch;
-        this.lastCommit = lastCommit;
         this.testToSvcMapping = testToSvcMapping;
         this.serviceToPathMapping = serviceToPathMapping;
         this.observabilityToolURL = observabilityToolURL;
