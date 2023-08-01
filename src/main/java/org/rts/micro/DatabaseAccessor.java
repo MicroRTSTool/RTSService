@@ -24,7 +24,7 @@ public class DatabaseAccessor {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseAccessor.class);
 
     public static void insertIntoDb(String repo, int pr, String testToSvcMapping,
-                                    String serviceToPathMapping, String monitoringURL, String projectPath) throws SQLException {
+                                    String serviceToPathMapping, String observabilityUrl, String projectPath) throws SQLException {
         logger.info("Trying to connect to " + url + " with user " + user);
 
         String sql =
@@ -38,7 +38,7 @@ public class DatabaseAccessor {
             pst.setInt(2, pr);
             pst.setString(3, testToSvcMapping);
             pst.setString(4, serviceToPathMapping);
-            pst.setString(5, monitoringURL);
+            pst.setString(5, observabilityUrl);
             pst.setString(6, projectPath);
 
             pst.executeUpdate();
@@ -88,7 +88,7 @@ public class DatabaseAccessor {
                 try {
                     String testToSvcMapping = rs.getString("test_to_svc_mapping");
                     String serviceToPathMapping = rs.getString("service_to_path_mapping");
-                    String observabilityToolURL = rs.getString("monitoring_url");
+                    String observabilityToolURL = rs.getString("observability_url");
 
                     Map<String, String> serviceToPathMap =
                             serviceToPathMapping != null ? Utils.parseJson(serviceToPathMapping) : null;
