@@ -122,7 +122,7 @@ public class Utils {
             }
         }
         return affectedServices;
-    }GIT
+    }
 
     public static Path cloneRepo(String repoName, int prNumber) throws IOException, InterruptedException {
         String repositoryUrl = "https://github.com/" + repoName + ".git";
