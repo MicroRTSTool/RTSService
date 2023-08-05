@@ -49,10 +49,10 @@ public class RTSController {
     }
     @CrossOrigin
     @GetMapping("/selected-test-results")
-    public ResponseEntity<String> selectTests(@RequestParam String pr, @RequestParam String repoName,
+    public ResponseEntity<String> selectTests(@RequestParam int pr, @RequestParam String repoName,
                                                        @RequestParam(defaultValue = "true") boolean enableExecution) {
         try {
-            Map<String, Set<String>> selectedTests = RTSelector.selectTests(repoName, Integer.valueOf(pr));
+            Map<String, Set<String>> selectedTests = RTSelector.selectTests(repoName, pr);
             if (!enableExecution) {
                 return ResponseEntity.ok(selectedTests.toString());
             }
