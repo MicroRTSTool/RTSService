@@ -27,7 +27,7 @@ public class RTSelector {
         }
         List<String> changedFiles = GitHubPRAnalyzer.getChangedFiles(repoName, prNumber);
         logger.info("Got the changed files");
-        logger.info("Changed files: " + changedFiles.toString());
+        logger.info("Changed files: " + changedFiles);
         // Get the service dependencies
         ServiceDependencyMapper mapper = new JaegerServiceDependencyMapper();
         Map<String, Set<String>> serviceDependenciesMap =
@@ -38,23 +38,22 @@ public class RTSelector {
             System.out.println("Analyzing project: " + microserviceProject.getProjectPath());
             // Get the affected services
             Set<String> affectedServices = Utils.affectedServices(microserviceProject, changedFiles);
-            logger.info("Affected services: " + affectedServices.toString());
+            logger.info("Affected services: " + affectedServices);
             // Given service dependencies and affected services, get the extended graph of affected services
-            if (affectedServices != null || !affectedServices.isEmpty()) {
+            if (!affectedServices.isEmpty()) {
                     allAffectedServices.addAll(affectedServices);
             }
         }
         Set<String> extendedAffectedServices = Utils.getExtendedAffectedServices(serviceDependenciesMap, allAffectedServices);
-        logger.info("Extended affected services: " + extendedAffectedServices.toString());
+        logger.info("Extended affected services: " + extendedAffectedServices);
         Map<String, Set<String>> testsToSvcMappings = new HashMap<>();
         // Get the matching tests
         for (MicroserviceProject microserviceProject : projects) {
             Map<String, Set<String>> testsMap = microserviceProject.getTestToSvcMapping();
 
-            if (testsMap != null && !testsMap.isEmpty() &&
-                    extendedAffectedServices != null && !extendedAffectedServices.isEmpty()) {
+            if (testsMap != null && !testsMap.isEmpty() && !extendedAffectedServices.isEmpty()) {
                 Set<String> matchingTests = getMatchingTests(extendedAffectedServices, testsMap);
-                logger.info("Matching tests: " + matchingTests.toString());
+                logger.info("Matching tests: " + matchingTests);
                 logger.info("Project path: " + microserviceProject.getProjectPath());
                 testsToSvcMappings.put(Utils.extractRelativePath(microserviceProject.getProjectPath()), matchingTests);
             }
