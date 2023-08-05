@@ -20,27 +20,21 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
     public void analyzeRepo(String repoName, int pr, String monitoringURL)
             throws IOException, GitAPIException, InterruptedException, SQLException {
         logger.info("Started analyzing repo: " + repoName + ", PR: " + pr);
-
         // Clear previous entries for the same repo and pr
         DatabaseAccessor.deleteFromDb(repoName, pr);
-
         Path tempDir = Utils.cloneRepo(repoName, pr);
-
         // Find Ballerina.toml files
         try (Stream<Path> paths = Files.walk(tempDir)) {
             List<Path> tomlFiles = paths
                     .filter(p -> p.getFileName().toString().equals(BALLERINA_TOML))
                     .collect(Collectors.toList());
-
             for (Path toml : tomlFiles) {
                 Path parentDir = toml.getParent();
-
                 // Find .bal files in the same directory
                 try (Stream<Path> balPaths = Files.list(parentDir)) {
                     Optional<Path> firstBalFile = balPaths
                             .filter(p -> p.toString().endsWith(BAL_EXTENSION))
                             .findFirst();
-
                     if (firstBalFile.isPresent()) {
                         Path balFile = firstBalFile.get();
                         List<String> lines = Files.readAllLines(balFile);
@@ -48,12 +42,10 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
                         Files.write(balFile, lines);
                     }
                 }
-
-
                 // Execute bal build
                 ProcessBuilder processBuilder = new ProcessBuilder("bal", "build");
                 processBuilder.directory(parentDir.toFile());
-                processBuilder.inheritIO(); // This will output the logs to the console
+                processBuilder.inheritIO();
                 Process process = processBuilder.start();
                 process.waitFor();
 
@@ -66,7 +58,6 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
                         testSvcMappingsContent, svcPathMappingsContent, monitoringURL, packageRoot);
             }
         }
-
         Utils.deleteDirectory(tempDir.toFile());
     }
 }
