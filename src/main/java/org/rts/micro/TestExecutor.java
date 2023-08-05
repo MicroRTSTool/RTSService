@@ -33,7 +33,6 @@ public class TestExecutor {
             for (File dir : matchingDirs) {
                 // Start a process builder to execute the command
                 ProcessBuilder testProcess = new ProcessBuilder("bal", "test");
-                testProcess.environment().put("BALLERINA_DEV_CENTRAL", "true");
                 testProcess.directory(dir);
                 testProcess.redirectErrorStream(true); // Combine stdout and stderr
                 Process process = testProcess.start();
@@ -70,7 +69,6 @@ public class TestExecutor {
                 // Start a process builder to execute the command
                 ProcessBuilder testProcess = new ProcessBuilder("bal", "test", "--tests",
                         String.join(",", tests));
-                testProcess.environment().put("BALLERINA_DEV_CENTRAL", "true");
                 testProcess.directory(dir);
                 testProcess.redirectErrorStream(true); // Combine stdout and stderr
                 Process process = testProcess.start();

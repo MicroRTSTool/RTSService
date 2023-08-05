@@ -1,8 +1,6 @@
 package org.rts.micro;
 
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.kohsuke.github.GHRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +44,7 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
                     if (firstBalFile.isPresent()) {
                         Path balFile = firstBalFile.get();
                         List<String> lines = Files.readAllLines(balFile);
-                        lines.add(0, "import microrts/static_analyzer as _;");
+                        lines.add(0, "import neworgd/static_analyzer as _;");
                         Files.write(balFile, lines);
                     }
                 }
@@ -54,7 +52,6 @@ public class BallerinaGHRepoAnalyzer extends GitHubRepoAnalyzer {
 
                 // Execute bal build
                 ProcessBuilder processBuilder = new ProcessBuilder("bal", "build");
-                processBuilder.environment().put("BALLERINA_DEV_CENTRAL", "true");
                 processBuilder.directory(parentDir.toFile());
                 processBuilder.inheritIO(); // This will output the logs to the console
                 Process process = processBuilder.start();
