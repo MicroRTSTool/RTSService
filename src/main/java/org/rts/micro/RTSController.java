@@ -54,10 +54,12 @@ public class RTSController {
         try {
             Map<String, Set<String>> selectedTests = RTSelector.selectTests(repoName, pr);
             if (!enableExecution) {
+                logger.info("Successfully selected tests for Repo: " + repoName + ", PR: " + pr);
                 return ResponseEntity.ok(selectedTests.toString());
+            } else {
+                String combinedOutput = executeSelectedTests(repoName, pr, selectedTests);
+                return ResponseEntity.ok(combinedOutput);
             }
-            String combinedOutput = executeSelectedTests(repoName, pr, selectedTests);
-            return ResponseEntity.ok(combinedOutput);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
